@@ -2,14 +2,25 @@
 
 import { useState, useEffect, useRef } from 'react';
 
-const currentVideo = 
-    {
-        name: "Clipe - Miki Matsubara - Stay With Me",
-        artist: "Miki Matsubara",
-        path: "medias/movies/miki_matsubara_stay_with_me.mp4",
-        url: "https://www.youtube.com/watch?v=QNYT9wVwQ8A&list=RDQNYT9wVwQ8A&start_radio=1"
-    };
+const videosList =
+    [
+        {
+            name: "Clipe - Miki Matsubara - Stay With Me",
+            artist: "Miki Matsubara",
+            path: "medias/videos/miki_matsubara_stay_with_me.mp4",
+            url: "https://www.youtube.com/watch?v=QNYT9wVwQ8A&list=RDQNYT9wVwQ8A&start_radio=1"
+        },
+        {
+            name: "",
+            artist: "",
+            path: "medias/videos/miki_matsubara_stay_with_me.mp4",
+            url: "https://www.youtube.com/watch?v=QNYT9wVwQ8A&list=RDQNYT9wVwQ8A&start_radio=1"
+        },
+    ][0];
+/* Como no momento é apenas um vídeo, eu já coloquei [0] 
+para sempre acessar o primeiro índice do array. */
 
+// Segue igual ao player de audio
 const formatarTempo = (segundos) => {
     if (isNaN(segundos) || segundos < 0) return '0:00';
     const min = Math.floor(segundos / 60);
@@ -18,31 +29,31 @@ const formatarTempo = (segundos) => {
     return `${min}:${segundosFormatados}`;
 };
 
+// Componente Principal do Player de Vídeo
 export default function VideoPlayer() {
 
-    const videoRef = useRef(null); // Refatorado de audioRef para videoRef
+    const videoRef = useRef(null);
 
-    // Hooks de Estado
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(0.5); 
-    const [prevVolume, setPrevVolume] = useState(0.5); 
+    const [volume, setVolume] = useState(0.5);
+    const [prevVolume, setPrevVolume] = useState(0.5);
 
     const playPauseMedia = () => {
-        const video = videoRef.current; // Refatorado para 'video'
+        const video = videoRef.current;
         if (!video) return;
 
         if (isPlaying) {
             video.pause();
         } else {
-            video.play().catch(error => console.error("Erro ao tentar tocar:", error));
+            video.play().catch(error => console.error("Erro ao tentar reproduzir o vídeo:", error));
         }
         setIsPlaying(!isPlaying);
     };
 
     const toggleVolumeMute = () => {
-        const video = videoRef.current; // Refatorado para 'video'
+        const video = videoRef.current;
         if (!video) return;
 
         if (volume > 0) {
@@ -50,8 +61,7 @@ export default function VideoPlayer() {
             setVolume(0);
             video.volume = 0;
         } else {
-            // Desmutar -> Volta para o volume anterior (ou 0.5 se for 0)
-            const newVolume = prevVolume > 0 ? prevVolume : 0.5;
+            const newVolume = prevVolume > 0 ? prevVolume : 1;
             setVolume(newVolume);
             video.volume = newVolume;
         }
@@ -60,7 +70,7 @@ export default function VideoPlayer() {
     const handleProgressChange = (e) => {
         const newTime = parseFloat(e.target.value);
         setCurrentTime(newTime);
-        if (videoRef.current) { // Refatorado para videoRef
+        if (videoRef.current) {
             videoRef.current.currentTime = newTime;
         }
     };
@@ -68,30 +78,26 @@ export default function VideoPlayer() {
     const handleVolumeChange = (e) => {
         const newVolume = parseFloat(e.target.value);
         setVolume(newVolume);
-        if (videoRef.current) { // Refatorado para videoRef
+        if (videoRef.current) {
             videoRef.current.volume = newVolume;
         }
     };
 
-    // Este useEffect agora gerencia os eventos do elemento <video>.
     useEffect(() => {
-        const video = videoRef.current; // Refatorado para 'video'
+        const video = videoRef.current;
         if (!video) return;
 
-        // 1. Handlers de Eventos do Vídeo
         const handleTimeUpdate = () => setCurrentTime(video.currentTime);
         const handleLoadedMetadata = () => {
             setDuration(video.duration);
             video.volume = volume;
         };
-        const handleEnded = () => setIsPlaying(false); // Pausa quando o vídeo termina
+        const handleEnded = () => setIsPlaying(false);
 
-        // 2. Adiciona os Ouvintes de Evento
         video.addEventListener('timeupdate', handleTimeUpdate);
         video.addEventListener('loadedmetadata', handleLoadedMetadata);
         video.addEventListener('ended', handleEnded);
 
-        // 3. Função de Limpeza
         return () => {
             video.removeEventListener('timeupdate', handleTimeUpdate);
             video.removeEventListener('loadedmetadata', handleLoadedMetadata);
@@ -110,23 +116,36 @@ export default function VideoPlayer() {
     }
 
     // --- JSX (O que será renderizado na tela) ---
-
     return (
-        <div className="video-player"> {/* Classe renomeada para video-player */}
+        <div className="video-player">
 
-            {/* ONDE O VÍDEO É EXIBIDO: A tag <video> usa a Ref e o caminho do vídeo */}
-            <video
-                ref={videoRef} // Refatorado para videoRef
-                src={currentVideo.path} // Refatorado para currentVideo
-                preload="metadata"
-                controls={false} // Desabilita controles nativos para usar os customizados
-                onClick={playPauseMedia} // Permite Play/Pause ao clicar no vídeo
-            ></video>
+            {/* ONDE O VÍDEO É DEFINIDO: A tag <video> usa a Ref e o caminho do vdeo */}
+            <div className="video-container-wrapper">
+                <video
+                    ref={videoRef}
+                    src={videosList.path}
+                    preload="metadata"
+                    controls={false}
+                    onClick={playPauseMedia}
+                    id="obj-video"
+                ></video>
 
-            {/* Os detalhes do vídeo */}
-            <div className="detalhes-video"> {/* Classe renomeada */}
-                <p className="titulo">{currentVideo.name}</p>
-                <p className="artista">{currentVideo.artist}</p>
+                {/* Overlay que eu criei para que o usuário possa acessar o vídeo pelo link */}
+                <a
+                    href={videosList.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="video-link-overlay"
+                >
+                    <i className="fas fa-external-link-alt"></i>
+                    <span>Assistir no link externo</span>
+                </a>
+            </div>
+
+
+            <div className="detalhes-video">
+                <p className="titulo">{videosList.name ? videosList.name : "Não definido" }</p>
+                <p className="artista">{videosList.artist ? videosList.artist : "Desconhecido" }</p>
             </div>
 
             {/* Progresso e Tempo */}
@@ -144,10 +163,9 @@ export default function VideoPlayer() {
                 <div className="duracao-total">{formatarTempo(duration)}</div>
             </div>
 
-            {/* Controles (Play/Pause, Volume, Sem Próxima/Anterior para um único vídeo) */}
+            {/* Controles (Play/Pause, Volume) No momento não há lista de vídeos então próximo e anterior não está implementado */}
             <div className="controles">
 
-                {/* Botões vazios para manter o layout centralizado */}
                 <button className="btn-controle" disabled><i className="fas fa-backward"></i></button>
 
                 <button id="btn-play-pause" className="btn-controle principal" onClick={playPauseMedia}>
