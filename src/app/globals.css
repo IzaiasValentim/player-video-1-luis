@@ -4,24 +4,87 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    background-color: #d9c9c9;
+    background-color: #33413fda;
     font-family: Arial, sans-serif;
 }
 
-/* Container principal do Player */
-.audio-player {
-    background-color: #e8e0e0;
-    width: 350px; /* Largura retangular */
+.video-player {
+    background-color:  #bbd0cda8;
+    width: 500; /* Largura retangular */
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
-/* Capa da Música */
+.video-container-wrapper {
+    position: relative; 
+    width: 100%; 
+    height: auto; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    margin-bottom: 15px; 
+}
+
+.video-player video {
+    width: 100%; 
+    height: auto; 
+    display: block;
+    border-radius: 8px;
+    transition: filter 0.3s ease;
+}
+
+.video-link-overlay {
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); 
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0; 
+    visibility: hidden; 
+    
+    transition: 
+        opacity 0.3s ease, 
+        visibility 0.3s ease;
+    
+    transition-delay: 0s; 
+    
+    text-decoration: none; 
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+
+.video-link-overlay .fas.fa-external-link-alt {
+    margin-bottom: 5px;
+    font-size: 1.5em;
+}
+
+
+.video-container-wrapper:hover .video-link-overlay {
+    opacity: 1; 
+    visibility: visible;
+
+   
+    transition-delay: 1s; 
+}
+
+
+.video-container-wrapper:hover video {
+    filter: brightness(60%);
+    transition-delay: 1s;
+}
+
+
 .capa {
     width: 100%;
-    height: 300px; /* Altura para dar forma retangular ao player */
+    height: 300px;
     overflow: hidden;
     border-radius: 8px;
     margin-bottom: 15px;
@@ -31,31 +94,29 @@ body {
 .capa img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
+    object-fit: cover;
 }
 
-/* Detalhes da Música */
-.detalhes-musica {
+.detalhes-video {
     margin-bottom: 20px;
 }
 
-.detalhes-musica .titulo {
+.detalhes-video .titulo {
     font-size: 1.2em;
     font-weight: bold;
     color: #333;
     margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
 }
 
-.detalhes-musica .artista {
+.detalhes-video .artista {
     font-size: 0.9em;
-    color: #666;
+    color: #2d2a2a;
     margin: 5px 0 0;
 }
 
-/* Barra de Progresso e Tempo */
 .progresso-container {
     display: flex;
     align-items: center;
@@ -66,7 +127,6 @@ body {
     flex-grow: 1;
     margin: 0 10px;
     height: 6px;
-    /* Estilos personalizados para o input range */
     -webkit-appearance: none;
     appearance: none;
     background: #c9c2c2;
@@ -74,16 +134,15 @@ body {
     cursor: pointer;
 }
 
-/* Estilização do "thumb" (o círculo que você arrasta) */
 #barra-progresso::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #63696f;
-    cursor: pointer;
-    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    background: #2a766a;
+    cursor: grab;
+    box-shadow: 0 0 5px rgba(2a766a, 255, 255, 0.5);
 }
 
 .tempo-atual, .duracao-total {
@@ -91,7 +150,6 @@ body {
     color: #777;
 }
 
-/* Controles */
 .controles {
     display: flex;
     justify-content: space-between;
@@ -109,17 +167,17 @@ body {
 }
 
 .btn-controle:hover {
-    color: #007bff;
+    color: #4ddfc9;
 }
 
 .btn-controle.principal {
     font-size: 2.5em;
-    color: #007bff;
+    color: #2a766a;
     margin: 0 15px;
 }
 
 .btn-controle.principal:hover {
-    color: #0056b3;
+    color: #4ddfc9;
 }
 
 /* Controle de Volume */
@@ -136,7 +194,7 @@ body {
     height: 6px;
     -webkit-appearance: none;
     appearance: none;
-    background: #63696f4b;
+    background: #33413fda;
     border-radius: 3px;
     cursor: pointer;
 }
@@ -147,6 +205,6 @@ body {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #5b636d72;
-    cursor: pointer;
+    background: #2a766a;
+    cursor: grabbing;
 }
