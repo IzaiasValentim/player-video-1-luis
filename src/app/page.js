@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import VideoItemList from './components/VideoItemList';
+
 
 const videosList =
     [
@@ -11,12 +13,18 @@ const videosList =
             url: "https://www.youtube.com/watch?v=QNYT9wVwQ8A&list=RDQNYT9wVwQ8A&start_radio=1"
         },
         {
+            name: "Clipe - Miki Matsubara - Stay With Me",
+            artist: "Web",
+            path: null,
+            url: "https://youtu.be/QNYT9wVwQ8A?list=RDQNYT9wVwQ8A"
+        },
+          {
             name: "",
             artist: "",
             path: "medias/videos/miki_matsubara_stay_with_me.mp4",
             url: "https://www.youtube.com/watch?v=QNYT9wVwQ8A&list=RDQNYT9wVwQ8A&start_radio=1"
         },
-    ][0];
+    ];
 /* Como no momento é apenas um vídeo, eu já coloquei [0] 
 para sempre acessar o primeiro índice do array. */
 
@@ -39,6 +47,8 @@ export default function VideoPlayer() {
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(0.5);
     const [prevVolume, setPrevVolume] = useState(0.5);
+    const [currentVideoIndex, setCurrentVideoIndex] = useState(0); // Aplicado para o player em geral.
+    const [selectedVideo, setSelectedVideo] = useState(videosList[0]); // Aplicado para a lista de músicas.
 
     const playPauseMedia = () => {
         const video = videoRef.current;
@@ -83,6 +93,56 @@ export default function VideoPlayer() {
         }
     };
 
+    const nextVideo = () => {
+        let newIndex;
+        if (currentVideoIndex === videosList.length - 1) {
+            newIndex = 0;
+        } else {
+            newIndex = currentVideoIndex + 1;
+        }
+        setCurrentVideoIndex(newIndex);
+        setSelectedVideo(videosList[newIndex]);
+        setIsPlaying(true);
+    };
+
+    const prevVideo = () => {
+        let newIndex;
+        if (currentVideoIndex === 0) {
+            newIndex = videosList.length - 1;
+        } else {
+            newIndex = currentVideoIndex - 1;
+        }
+        setCurrentVideoIndex(newIndex);
+        setSelectedVideo(videosList[newIndex]);
+        setIsPlaying(true);
+    };
+
+    /**
+     * Lida com a seleção de uma faixa na lista.
+     */
+    const handleVideoSelect = (index) => {
+        setCurrentVideoIndex(index);
+        setSelectedVideo(videosList[index]);
+        setIsPlaying(true); // Inicia a reprodução
+    };
+
+      useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        video.currentTime = 0; // Zera o tempo no elemento DOM
+
+        //video.load(); // Força o recarregamento do novo SRC
+
+        if (isPlaying) {
+            video.play().catch(error => {
+                console.error("Autoplay bloqueado ao trocar de faixa:", error);
+                setIsPlaying(false);
+            });
+        }
+
+    }, [selectedVideo, isPlaying]);
+
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
@@ -123,16 +183,25 @@ export default function VideoPlayer() {
             <div className="video-container-wrapper">
                 <video
                     ref={videoRef}
-                    src={videosList.path}
                     preload="metadata"
                     controls={false}
                     onClick={playPauseMedia}
                     id="obj-video"
-                ></video>
+                >
+                    {/* 1. Fonte Local (Path) - Tenta carregar este primeiro */}
+                    {selectedVideo.path && (
+                        <source src={selectedVideo.path} type="video/mp4" />
+                    )}
+
+                    {/* 2. Fonte Externa (URL) - Tenta carregar este se o primeiro falhar */}
+                    {selectedVideo.url && (
+                        <source src={selectedVideo.url} type="video/mp4" />
+                    )}
+                </video>
 
                 {/* Overlay que eu criei para que o usuário possa acessar o vídeo pelo link */}
                 <a
-                    href={videosList.url}
+                    href={selectedVideo.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="video-link-overlay"
@@ -144,8 +213,8 @@ export default function VideoPlayer() {
 
 
             <div className="detalhes-video">
-                <p className="titulo">{videosList.name ? videosList.name : "Não definido" }</p>
-                <p className="artista">{videosList.artist ? videosList.artist : "Desconhecido" }</p>
+                <p className="titulo">{selectedVideo.name ? selectedVideo.name : "Não definido" }</p>
+                <p className="artista">{selectedVideo.artist ? selectedVideo.artist : "Desconhecido" }</p>
             </div>
 
             {/* Progresso e Tempo */}
@@ -166,13 +235,13 @@ export default function VideoPlayer() {
             {/* Controles (Play/Pause, Volume) No momento não há lista de vídeos então próximo e anterior não está implementado */}
             <div className="controles">
 
-                <button className="btn-controle" disabled><i className="fas fa-backward"></i></button>
+                <button className="btn-controle" onClick={prevVideo} ><i className="fas fa-backward"></i></button>
 
                 <button id="btn-play-pause" className="btn-controle principal" onClick={playPauseMedia}>
                     <i className={getPlayPauseIcon()}></i>
                 </button>
 
-                <button className="btn-controle" disabled><i className="fas fa-forward"></i></button>
+                <button className="btn-controle" onClick={nextVideo}><i className="fas fa-forward"></i></button>
 
                 <div className="volume-container">
                     <button id="btn-volume" className="btn-controle" onClick={toggleVolumeMute}>
@@ -189,6 +258,22 @@ export default function VideoPlayer() {
                     />
                 </div>
             </div>
+             {/* 3. LISTA DE VÍDEOS (FORA DO PLAYER) */}
+            <div className="playlist-container">
+                <h3>Lista de Reprodução</h3>
+                <div className="track-list">
+                    {videosList.map((video, index) => (
+                        <VideoItemList
+                            key={index}
+                            video={video}
+                            index={index}
+                            isSelected={index === currentVideoIndex}
+                            onSelect={handleVideoSelect}
+                        />
+                    ))}
+                </div>
+            </div>
         </div>
+        
     );
 }
